@@ -12,6 +12,7 @@ public class GameManager {
     private int MAX_Moves=7;
     private int comboStack;
     private final int BASE_SCORE=10;
+    private GameLevel currentLevel; 
     public GameManager(Board board,Player player){
         this.board=board;
         this.player=player;
@@ -51,6 +52,14 @@ public class GameManager {
     }
     public int getBaseScore(){
         return this.BASE_SCORE;
+    }
+    public void setGameLevel(GameLevel level){
+        this.currentLevel=level;
+    }
+    public void startGame(){
+        int previewTime=currentLevel.getPreviewTime();
+        MAX_Moves=currentLevel.getMaxMoves();
+        startPreview(previewTime);
     }
     public void startPreview(int miliseconds){
         status=GameStatus.WAITING;
@@ -111,7 +120,7 @@ public class GameManager {
     }
     public void SelectedCard(int r,int c){
         Card currentCard=board.getCard(r, c);
-        if (status==GameStatus.WAITING||currentCard.isMatch()||currentCard.isFlipped()){
+        if (currentCard==null||status!=GameStatus.PLAYING||currentCard.isMatch()||currentCard.isFlipped()){
             return;
         }
         currentCard.flip();
@@ -129,10 +138,10 @@ public class GameManager {
         } else{
             MisMatch();
         }
-        if (moveCount>MAX_Moves&&!board.allMatched()) {
+        if (moveCount>=MAX_Moves&&!board.allMatched()&&status!=GameStatus.WAITING) {
             status=GameStatus.LOOSE;
             if (observer!=null){
-                observer.onGameOver("LOOSE");
+                observer.onGameOver("GAME OVER");
             }
         }
     

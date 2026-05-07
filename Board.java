@@ -1,47 +1,68 @@
 import java.util.ArrayList;
 import java.util.Collections;
+import javax.print.DocFlavor.STRING; 
+interface ImageProvider{
+    ArrayList<String>imagePath();
+}
+interface ShuffleStragegy{
+    void shuffle(ArrayList<Card>cards);
+}
+class RandomShuffle implements ShuffleStragegy{
+    @Override
+    public void shuffle(ArrayList<Card>cards){
+        Collections.shuffle(cards);
+      
+            }
+}
+
+class LocalImageProvider implements ImageProvider{
+    @Override
+    public ArrayList<String>imagePath(){
+        ArrayList<String>images=new ArrayList<>();
+        images.add("c:\\Users\\admin\\Downloads\\watermelon.jpg");
+        images.add("c:\\Users\\admin\\Downloads\\startfruit.jpg");
+        images.add("c:\\Users\\admin\\Downloads\\mangosteen.jpg");
+        images.add("c:\\Users\\admin\\Downloads\\lemon.jpg");
+        images.add("c:\\Users\\admin\\Downloads\\grape.jpg");
+        images.add("c:\\Users\\admin\\Downloads\\coconut.jpg");
+        images.add("c:\\Users\\admin\\Downloads\\cherry.jpg");
+        images.add("c:\\Users\\admin\\Downloads\\Cantaloupe.jpg");
+        return images;
+    }
+}
 public class Board {
     private Card[][] cards;
     private int rows=4;
     private int columns=4;
-    private ArrayList <String>imagePath;
-    public Board(){
+    private ImageProvider imageProvider;
+    private ShuffleStragegy shuffleStragegy;
+    public Board(ImageProvider Provider,ShuffleStragegy stragegy){
         this.cards=new Card[rows][columns];
-        this.imagePath=new ArrayList<>();
-        addImage();
-        shuffleCard();
-    }
-    public void addImage(){
-        imagePath.clear();
-        imagePath.add("c:\\Users\\admin\\Downloads\\strawberry.jpg");
-        imagePath.add("c:\\Users\\admin\\Downloads\\papaya.jpg");
-        imagePath.add("c:\\Users\\admin\\Downloads\\grape.jpg");
-        imagePath.add("c:\\Users\\admin\\Downloads\\blueberry.jpg");
-        imagePath.add("c:\\Users\\admin\\Downloads\\avocado.jpg");
-        imagePath.add("c:\\Users\\admin\\Downloads\\apple.jpg");
-        imagePath.add("c:\\Users\\admin\\Downloads\\passionfruit.jpg");
-        imagePath.add("c:\\Users\\admin\\Downloads\\pomergranate.jpg");
+        this.imageProvider=Provider;
+        this.shuffleStragegy=stragegy;
+        initBoard();
     }
     public ArrayList<Card> generateCards(){
         ArrayList<Card>tempList=new ArrayList<>();
+        ArrayList<String>images=imageProvider.imagePath();
         int numbercard=rows*columns;
         int numberpair=numbercard/2;
         int inde=0;
         for (int i=0;i<numberpair;i++){
-            String imagePaths=imagePath.get(i);
+            String imagePaths=images.get(i);
             tempList.add(new Card(inde,imagePaths,i));
             inde++;
             tempList.add(new Card(inde,imagePaths,i));
         }
         return tempList;
         }
-    public void shuffleCard(){
-        ArrayList<Card>list=generateCards();
-        Collections.shuffle(list);
+    public void shuffelCard(){
+        ArrayList<Card>templist=generateCards();
+        shuffleStragegy.shuffle(templist);
         int index=0;
-        for (int k=0;k<rows;k++){
-            for (int z=0;z<rows;z++){
-                cards[k][z]=list.get(index);
+        for (int i=0;i<rows;i++){
+            for (int j=0;j<columns;j++){
+                cards[i][j]=templist.get(index);
                 index++;
             }
         }
@@ -83,7 +104,6 @@ public class Board {
         return true;
     }
     public void initBoard(){
-        addImage();
         shuffleCard();
     }
     public void resetBoard(){

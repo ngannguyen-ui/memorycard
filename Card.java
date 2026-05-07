@@ -1,5 +1,3 @@
-
-
 public class Card {
     private int ID;
     private int pairID;
@@ -32,6 +30,7 @@ public class Card {
         this.isMatch=match;
 
     }
+
     public void flip(){
         if (isMatch||isFlipped){
             return;
