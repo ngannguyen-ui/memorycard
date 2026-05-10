@@ -56,8 +56,7 @@ public class Board {
         }
         return tempList;
         }
-    public void shuffelCard(){
-        RandomShuffle randomShuffle=new RandomShuffle();
+    public void shuffelCard(RandomShuffle randomShuffle){
         ArrayList<Card> shuffledCards = randomShuffle.shuffle(generateCards());
         int index=0;
         if (index>=shuffledCards.size()){
@@ -107,10 +106,10 @@ public class Board {
         return true;
     }
     public void initBoard(){
-        shuffleCard();
+        shuffleCard(new RandomShuffle());
     }
     public void resetBoard(){
-        shuffleCard();
+        shuffleCard(new RandomShuffle());
         
     }
 }

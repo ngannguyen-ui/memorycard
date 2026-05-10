@@ -11,7 +11,6 @@ public class GameManager {
     private TimeManager timeManager;
     private int moveCount=0;
     private int MAX_Moves=7;
-    private ScoreManager scoreManager;
     private final int BASE_SCORE=10;
     private GameLevel currentLevel; 
     public GameManager(Board board,Player player){
@@ -80,9 +79,6 @@ public class GameManager {
         previewTimer.setRepeats(false);
         previewTimer.start();
     }
-
-   
-    }
     public void processMatch(){
         firstSelectedCard.setMatch(true);
         SecondSelectedCard.setMatch(true);
@@ -117,7 +113,7 @@ public class GameManager {
         timer.setRepeats(false);
         timer.start();
     }
-    public void getElapsedTime(){
+    public long getElapsedTime(){
         return timeManager.getElapsedTime();
     }
     public void SelectedCard(int r,int c){
