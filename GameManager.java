@@ -5,28 +5,35 @@ public class GameManager {
     private Card SecondSelectedCard;
     private GameStatus status;
     private GameObserver observer;
-    private long startTime;
-    private long totalTime;
-    private long bestTime;
+    private stateGameObserver stateObserver;
+    private scoreGameObserver scoreObserver;
+    private ScoreManager scoreManager;
+    private TimeManager timeManager;
     private int moveCount=0;
     private int MAX_Moves=7;
-    private int comboStack;
+    private ScoreManager scoreManager;
     private final int BASE_SCORE=10;
     private GameLevel currentLevel; 
     public GameManager(Board board,Player player){
         this.board=board;
         this.player=player;
+        this.scoreManager=new ScoreManager();
         this.firstSelectedCard=null;
         this.SecondSelectedCard=null;
         this.moveCount=0;
         this.status=GameStatus.PLAYING;
+        this.timeManager=new TimeManager();
+        this.scoreManager=new ScoreManager();
     }
-    public void setObserver(GameObserver observer){
-        this.observer=observer;
+    public void setStateObserver(stateGameObserver observer){
+        this.stateObserver=observer;
+    }
+    public void setScoreObserver(scoreGameObserver observer){
+        this.scoreObserver=observer;
     }
     public void notifyObserver(){
-        if (observer!=null){
-            observer.onGameUpdate();
+        if (stateObserver!=null){
+            stateObserver.onGameUpdate();
         }
     }
     public Board getBoard(){
@@ -48,10 +55,10 @@ public class GameManager {
         return this.moveCount;
     }
     public int getComboStack(){
-        return this.comboStack;
+        return this.scoreManager.getComboStack();
     }
     public int getBaseScore(){
-        return this.BASE_SCORE;
+        return this.scoreManager.getBaseScore();
     }
     public void setGameLevel(GameLevel level){
         this.currentLevel=level;
@@ -73,39 +80,31 @@ public class GameManager {
         previewTimer.setRepeats(false);
         previewTimer.start();
     }
-    public void startTime(){
-        if (this.startTime==0){
-            this.startTime=System.currentTimeMillis();
-        }
-    }
-    public long getElapsedTime(){
-         if (status==GameStatus.FINISHED){
-            return totalTime;
-         }
-         return (System.currentTimeMillis()-startTime)/1000;
+
+   
     }
     public void processMatch(){
         firstSelectedCard.setMatch(true);
         SecondSelectedCard.setMatch(true);
-        comboStack++;
+        scoreManager.addMatchPoints();
         player.addMatchPair(SecondSelectedCard, firstSelectedCard);
-        int earnedPoints=BASE_SCORE*comboStack;
-        player.addScore(earnedPoints);
+        int Point=scoreManager.getEarnedPoints();
+        player.addScore(Point);
         firstSelectedCard=null;
         SecondSelectedCard=null;
         if (board.allMatched()){
             status=GameStatus.FINISHED;
-            if (observer!=null) {
-                observer.onGameOver("WINNING");
+            if (stateObserver!=null) {
+                stateObserver.onGameOver("WINNING");
             }
         }
-        if (observer!=null){
-            observer.onScoreAdded(earnedPoints,comboStack);
+        if (scoreObserver!=null){
+            scoreObserver.onScoreAdded(scoreManager.getEarnedPoints(), scoreManager.getComboStack());
         }
         notifyObserver();
     }
     public void MisMatch(){
-        comboStack=0;
+        scoreManager.resetCombo();
         status=GameStatus.WAITING;
         javax.swing.Timer timer=new javax.swing.Timer(1000, e->{
             firstSelectedCard.hide();
@@ -117,6 +116,9 @@ public class GameManager {
         });
         timer.setRepeats(false);
         timer.start();
+    }
+    public void getElapsedTime(){
+        return timeManager.getElapsedTime();
     }
     public void SelectedCard(int r,int c){
         Card currentCard=board.getCard(r, c);
@@ -140,8 +142,8 @@ public class GameManager {
         }
         if (moveCount>=MAX_Moves&&!board.allMatched()&&status!=GameStatus.WAITING) {
             status=GameStatus.LOOSE;
-            if (observer!=null){
-                observer.onGameOver("GAME OVER");
+            if (stateObserver!=null){
+                stateObserver.onGameOver("GAME OVER");
             }
         }
     
@@ -155,5 +157,5 @@ public class GameManager {
     startPreview(1000);
 
 }
-    
+   
 }
