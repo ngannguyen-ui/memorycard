@@ -1,6 +1,5 @@
 import java.util.ArrayList;
 import java.util.Collections;
-import javax.print.DocFlavor.STRING; 
 interface ImageProvider{
     ArrayList<String>imagePath();
 }
@@ -56,7 +55,7 @@ public class Board {
         }
         return tempList;
         }
-    public void shuffelCard(RandomShuffle randomShuffle){
+    public void shuffleCard(RandomShuffle randomShuffle){
         ArrayList<Card> shuffledCards = randomShuffle.shuffle(generateCards());
         int index=0;
         if (index>=shuffledCards.size()){

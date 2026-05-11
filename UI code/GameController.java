@@ -7,6 +7,10 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
 import java.awt.*;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import java.net.URL;
 
 public class GameController {
     private GameModel model = new GameModel();
@@ -29,7 +33,7 @@ public class GameController {
         if (!model.canFlip(row, col)) return;
 
         model.flipCard(row, col);
-        view.renderCell(row, col, model.getCardAnimation(row, col));
+        view.renderCell(row, col, model.getCard(row, col));
 
         if (model.hasPendingPair()) {
             checkMatch();
@@ -54,8 +58,8 @@ private void flipBackWithDelay() {
     Timer timer = new Timer(800, e -> {
         // Lật ngược lại
         for (int[] pos : model.getPendingPair()) {
-            model.getCardAnimation(pos[0], pos[1]).setFaceUp(false);
-            view.renderCell(pos[0], pos[1], model.getCardAnimation(pos[0], pos[1]));
+            model.getCard(pos[0], pos[1]).hide();
+            view.renderCell(pos[0], pos[1], model.getCard(pos[0], pos[1]));
         }
         model.clearPending();
         view.setEnabled(true);
@@ -96,7 +100,7 @@ private void showWinDialog() {
     panel.setBackground(Color.WHITE);
 
     
-    JLabel lblTitle = new JLabel("🎉 You Win!", SwingConstants.CENTER);
+    JLabel lblTitle = new JLabel("You Win!", SwingConstants.CENTER);
     lblTitle.setFont(new Font("Comic Sans MS", Font.BOLD, 22));
     lblTitle.setForeground(new Color(255, 220, 50));
 
@@ -104,8 +108,8 @@ private void showWinDialog() {
     JPanel statsPanel = new JPanel(new GridLayout(2, 1, 0, 5));
     statsPanel.setBackground(new Color(244, 162, 89));
 
-    JLabel lblScore = new JLabel("⭐ Điểm: " + infoPanel.getScore(), SwingConstants.CENTER);
-    JLabel lblTime  = new JLabel("⏱ Thời gian: " + infoPanel.getSeconds() + "s", SwingConstants.CENTER);
+    JLabel lblScore = new JLabel("Điểm: " + infoPanel.getScore(), SwingConstants.CENTER);
+    JLabel lblTime  = new JLabel("Thời gian: " + infoPanel.getSeconds() + "s", SwingConstants.CENTER);
     lblScore.setFont(new Font("Comic Sans MS", Font.PLAIN, 16));
     lblTime.setFont(new Font("Comic Sans MS", Font.PLAIN, 16));
     lblScore.setForeground(Color.WHITE);
@@ -118,8 +122,8 @@ private void showWinDialog() {
     JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
     btnPanel.setBackground(new Color(244, 162, 89));
 
-    JButton btnReplay = new JButton("🔄 New Game");
-    JButton btnExit   = new JButton("❌ Quit");
+    JButton btnReplay = new JButton("New Game");
+    JButton btnExit   = new JButton("Quit");
 
     styleButton(btnReplay, new Color(222, 250, 202));   
     styleButton(btnExit,   new Color(222, 250, 202));   

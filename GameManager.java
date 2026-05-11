@@ -5,8 +5,8 @@ public class GameManager {
     private Card SecondSelectedCard;
     private GameStatus status;
     private GameObserver observer;
-    private stateGameObserver stateObserver;
-    private scoreGameObserver scoreObserver;
+    private StateGameObserver stateObserver;
+    private ScoreGameObserver scoreObserver;
     private ScoreManager scoreManager;
     private TimeManager timeManager;
     private int moveCount=0;
@@ -22,17 +22,20 @@ public class GameManager {
         this.moveCount=0;
         this.status=GameStatus.PLAYING;
         this.timeManager=new TimeManager();
-        this.scoreManager=new ScoreManager();
     }
-    public void setStateObserver(stateGameObserver observer){
-        this.stateObserver=observer;
+
+    public void setObserver(GameObserver observer){
+        this.observer = observer;
     }
-    public void setScoreObserver(scoreGameObserver observer){
+    public void setStateObserver(StateGameObserver stateObserver){
+        this.stateObserver= stateObserver;
+    }
+    public void setScoreObserver(ScoreGameObserver observer){
         this.scoreObserver=observer;
     }
     public void notifyObserver(){
-        if (stateObserver!=null){
-            stateObserver.onGameUpdate();
+        if (observer!=null){
+            observer.onGameUpdate();
         }
     }
     public Board getBoard(){

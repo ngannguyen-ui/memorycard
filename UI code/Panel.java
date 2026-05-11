@@ -42,10 +42,10 @@ public class Panel extends JPanel{
     this.controller = controller;
     }
 
-public void renderCell(int row, int col, CardAnimation card) {
+public void renderCell(int row, int col, Card card) {
     JButton btn = cells[row][col];
 
-    if (card.isMatched()) {
+    if (card.isMatch()) {
         btn.setText(card.getValue());
         btn.setBackground(new Color(76, 175, 80));  // xanh lá
         btn.setEnabled(false);
@@ -62,7 +62,7 @@ public void renderCell(int row, int col, CardAnimation card) {
 public void renderAll(GameModel model) {
     for (int r = 0; r < ROWS; r++)
         for (int c = 0; c < COLS; c++)
-            renderCell(r, c, model.getCardAnimation(r, c));
+            renderCell(r, c, model.getCard(r, c));
 }
 
 public void setCellColor(int row, int col, Color color) {

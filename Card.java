@@ -17,7 +17,7 @@ public class Card {
     public int getPairID(){
         return this.pairID;
     }
-    public String imagePath(){
+    public String getImagePath(){
         return this.imagePath;
     }
     public boolean isFlipped(){

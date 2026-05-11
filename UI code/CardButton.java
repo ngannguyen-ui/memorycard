@@ -37,14 +37,14 @@ public class CardButton extends JButton {
     super.paintComponent(g);
 }
 
-    public void render(CardAnimation card) {
-        if (card.isMatched()) {
+    public void render(Card card) {
+        if (card.isMatch()) {
             setIcon(loadIcon(card.getImagePath()));
             setBackground(new Color(76, 175, 80));
             setBorder(BorderFactory.createLineBorder(Color.YELLOW, 3)); 
             BorderFactory.createMatteBorder(2, 0, 0, 0, Color.GRAY);
             setEnabled(false);
-        } else if (card.isFaceUp()) {
+        } else if (card.isFlipped()) {
             setIcon(loadIcon(card.getImagePath()));
             setBackground(new Color(33, 150, 243));
             setBorder(BorderFactory.createLineBorder(Color.WHITE, 3));
