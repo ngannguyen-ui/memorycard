@@ -30,6 +30,16 @@ public class GameController {
         view.setController(this);  
 
         gameManager.setObserver(() -> view.updateBoard(gameManager.getBoard()));
+
+        gameManager.setStateObserver(result -> {
+        infoPanel.stopTimer();
+        if ("WINNING".equals(result)) {
+            showWinDialog(); 
+        } else if ("GAME OVER".equals(result)) {
+            showLoseDialog();
+            resetGame();
+        } 
+    });
     }
 
     public GameController getController(){
@@ -70,14 +80,7 @@ public class GameController {
         infoPanel.addMove();
         infoPanel.addScore(10); // Ví dụ lấy điểm
 
-        // 3. Kiểm tra thắng thua sau khi click
-        if (gameManager.gameStatus() == GameStatus.FINISHED) {
-            infoPanel.stopTimer();
-            showWinDialog();
-        } else if (gameManager.gameStatus() == GameStatus.LOOSE) {
-            infoPanel.stopTimer();
-            showWinDialog(); // Tận dụng luôn hàm showWinDialog cho màn hình thua
-        }
+        
     }
 
     // Bỏ 2 method checkMatch & flipBackWithDelay vì trong GameManager đã là full HD rồi
@@ -166,25 +169,6 @@ private void showWinDialog() {
         Color.WHITE     
     );
 
-    // JPanel statsPanel = new JPanel(new GridLayout(2, 1, 0, 5));
-    // statsPanel.setBackground(new Color(244, 162, 89));
-    // statsPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
-
-    // JPanel scoreRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
-    // JLabel lblScore = new JLabel("Score: " + infoPanel.getScore(), SwingConstants.CENTER);
-    // lblScore.setFont(new Font("Comic Sans MS", Font.PLAIN, 16));
-    // lblScore.setForeground(Color.WHITE);
-    // JLabel starImage  = new JLabel(loadDialogIcon("/images/star-icon.png", 28, 28));
-    // scoreRow.add(starImage);
-    // scoreRow.add(lblScore);
-
-    // JPanel timeRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
-    // JLabel lblTime  = new JLabel("Time: " + infoPanel.getSeconds() + "s", SwingConstants.CENTER);
-    // JLabel clockImage = new JLabel(loadDialogIcon("/images/clock-icon.png", 28, 28));
-    // lblTime.setFont(new Font("Comic Sans MS", Font.PLAIN, 16));
-    // lblTime.setForeground(Color.WHITE);
-    // timeRow.add(clockImage);
-    // timeRow.add(lblTime);
 
     JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
     //btnPanel.setBackground(Color.WHITE);
@@ -254,6 +238,12 @@ private void showWinDialog() {
     });
 
     dialog.setVisible(true);
+}
+
+private void showLoseDialog() {
+    
+    
+    
 }
 
 private void styleButton(JButton btn, Color color) {
