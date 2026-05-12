@@ -1,3 +1,4 @@
+package Logic;
 public class Player {
     private String Name;
     private int Score;

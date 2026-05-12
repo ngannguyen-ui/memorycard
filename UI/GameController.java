@@ -1,0 +1,302 @@
+package UI;
+import Logic.Card;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.Timer;
+import java.awt.*;
+import java.net.URL;
+
+public class GameController {
+    private GameModel model = new GameModel();
+    private Panel view = new Panel();
+    private GameController controller;
+    private InfoPanel infoPanel;
+
+    public GameController(GameModel model, Panel view, InfoPanel infoPanel) {
+        this.model = model;
+        this.view = view;
+        this.infoPanel = infoPanel;
+        view.setController(this);  
+    }
+
+    public GameController getController(){
+        return controller;
+    }
+
+    private ImageIcon loadAndScaleByWidth(String path, int targetWidth) {
+        try {
+            java.net.URL imgURL = getClass().getResource(path);
+            if (imgURL != null) {
+                ImageIcon icon = new ImageIcon(imgURL);
+                int originalWidth = icon.getIconWidth();
+                int originalHeight = icon.getIconHeight();
+
+                // Tính toán chiều cao để giữ nguyên tỷ lệ
+                double ratio = (double)originalHeight / originalWidth;
+                int targetHeight = (int)(targetWidth * ratio);
+
+                Image scaledImage = icon.getImage().getScaledInstance(targetWidth, targetHeight, Image.SCALE_SMOOTH);
+                return new ImageIcon(scaledImage);
+            } else {
+                System.err.println("❌ Không tìm thấy icon: " + path);
+                return null;
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Lỗi load icon: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public void onCellClicked(int row, int col) {
+        if (!model.canFlip(row, col)) return;
+
+        model.flipCard(row, col);
+        view.renderCell(row, col, model.getCard(row, col));
+
+        if (model.hasPendingPair()) {
+            checkMatch();
+        }
+        infoPanel.addMove();
+    }
+
+    private void checkMatch() {
+        if (model.isMatch()) {
+            model.confirmMatch();
+            flashMatch();
+            infoPanel.addScore(10);
+            checkWin(); 
+        } else {
+            flipBackWithDelay();
+        }
+    }
+
+    private void flipBackWithDelay() {
+        view.setEnabled(false);
+
+        Timer timer = new Timer(800, e -> {
+            // Lật ngược lại
+            for (int[] pos : model.getPendingPair()) {
+                model.getCard(pos[0], pos[1]).hide();
+                view.renderCell(pos[0], pos[1], model.getCard(pos[0], pos[1]));
+            }
+            model.clearPending();
+            view.setEnabled(true);
+    });
+
+    timer.setRepeats(false);
+    timer.start();
+}
+
+// Nhấp nháy khi match
+public void flashMatch() {
+    int[] a = model.getLastMatch()[0];
+    int[] b = model.getLastMatch()[1];
+
+    Timer flash = new Timer(150, null);
+    int[] count = {0};
+
+    flash.addActionListener(e -> {
+        Color color = (count[0] % 2 == 0) ? Color.YELLOW : new Color(76, 175, 80);
+        view.setCellColor(a[0], a[1], color);
+        view.setCellColor(b[0], b[1], color);
+        if (++count[0] >= 6) flash.stop();
+    });
+    flash.start();
+}
+
+private void checkWin() {
+    if (model.isWin()) {
+        infoPanel.stopTimer();
+        showWinDialog();
+    }
+}
+
+private void showWinDialog() {
+    
+    JPanel panel = new JPanel();
+    panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
+    panel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+    panel.setBackground(Color.WHITE);
+
+    JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER,8,0));   
+    titlePanel.setAlignmentX(Component.CENTER_ALIGNMENT); 
+    JLabel lblTitle = new JLabel("You Win!", SwingConstants.CENTER);
+    lblTitle.setFont(new Font("Comic Sans MS", Font.BOLD, 24));
+    lblTitle.setForeground(new Color(251, 84, 152));
+
+    JLabel fireworkImage = new JLabel(loadDialogIcon("/images/firework-icon.png", 50, 50));
+
+    titlePanel.add(fireworkImage);
+    titlePanel.add(lblTitle);
+
+    JPanel scoreBox = makeStatBox(
+        loadDialogIcon("/images/star-icon.png", 32, 32),
+        "Score: " + infoPanel.getScore(),
+        new Color(244,159,70),    
+        Color.WHITE      
+    );
+
+    JPanel timeBox = makeStatBox(
+        loadDialogIcon("/images/clock-icon.png", 32, 32),
+        "Time: " + infoPanel.getSeconds(),
+        new Color(244,159,70),  
+        Color.WHITE     
+    );
+
+    // JPanel statsPanel = new JPanel(new GridLayout(2, 1, 0, 5));
+    // statsPanel.setBackground(new Color(244, 162, 89));
+    // statsPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
+
+    // JPanel scoreRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
+    // JLabel lblScore = new JLabel("Score: " + infoPanel.getScore(), SwingConstants.CENTER);
+    // lblScore.setFont(new Font("Comic Sans MS", Font.PLAIN, 16));
+    // lblScore.setForeground(Color.WHITE);
+    // JLabel starImage  = new JLabel(loadDialogIcon("/images/star-icon.png", 28, 28));
+    // scoreRow.add(starImage);
+    // scoreRow.add(lblScore);
+
+    // JPanel timeRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
+    // JLabel lblTime  = new JLabel("Time: " + infoPanel.getSeconds() + "s", SwingConstants.CENTER);
+    // JLabel clockImage = new JLabel(loadDialogIcon("/images/clock-icon.png", 28, 28));
+    // lblTime.setFont(new Font("Comic Sans MS", Font.PLAIN, 16));
+    // lblTime.setForeground(Color.WHITE);
+    // timeRow.add(clockImage);
+    // timeRow.add(lblTime);
+
+    JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
+    //btnPanel.setBackground(Color.WHITE);
+
+    JButton btnReplay = new JButton();
+    JButton btnExit = new JButton();
+
+    ImageIcon replayImage = loadAndScaleByWidth("/images/replay_button.png", 110);
+    ImageIcon exitImage = loadAndScaleByWidth("/images/quit_button.png", 110);
+
+    if (exitImage != null || replayImage != null) {
+        btnReplay.setIcon(replayImage);
+        btnExit.setIcon(exitImage);
+} else {
+    btnReplay.setText("New Game");
+    btnExit.setText("Quit");
+}
+
+    btnReplay.setBorderPainted(false);      
+    btnReplay.setContentAreaFilled(false);   
+    btnReplay.setFocusPainted(false);        
+    btnReplay.setMargin(new Insets(0, 0, 0, 0)); 
+    btnReplay.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+    btnExit.setBorderPainted(false);      // Xóa viền mặc định
+    btnExit.setContentAreaFilled(false);   // Làm trong suốt vùng nền
+    btnExit.setFocusPainted(false);        // Xóa viền khi được focus
+    btnExit.setMargin(new Insets(0, 0, 0, 0)); // Xóa khoảng lề thừa
+    btnExit.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); // Hiện bàn tay khi di chuột vào
+    styleButton(btnReplay, new Color(222, 250, 202));
+    styleButton(btnExit,   new Color(222, 250, 202));
+
+    btnPanel.add(btnReplay);
+    btnPanel.add(btnExit);
+
+    panel.add(lblTitle);
+    panel.add(Box.createVerticalStrut(15));
+    panel.add(scoreBox);
+    //panel.add(Box.createVerticalStrut(10));
+    panel.add(timeBox);
+    panel.add(Box.createVerticalStrut(20));
+    panel.add(btnPanel);
+
+    
+    JDialog dialog = new JDialog();
+    dialog.setTitle("Kết quả");
+    dialog.setModal(true);   
+    dialog.setContentPane(panel);
+    dialog.pack();
+    dialog.setResizable(false);
+    dialog.setLocationRelativeTo(view);  
+
+    
+    btnReplay.addActionListener(e -> {
+        dialog.dispose();
+        resetGame();
+    });
+
+    btnExit.addActionListener(e -> {
+        int confirm = JOptionPane.showConfirmDialog(
+            dialog,
+            "Bạn có chắc muốn thoát không?",
+            "Xác nhận",
+            JOptionPane.YES_NO_OPTION
+        );
+        if (confirm == JOptionPane.YES_OPTION) System.exit(0);
+    });
+
+    dialog.setVisible(true);
+}
+
+private void styleButton(JButton btn, Color color) {
+    btn.setBackground(color);
+    btn.setForeground(Color.DARK_GRAY);
+    btn.setFont(new Font("Comic Sans MS", Font.BOLD, 14));
+    btn.setFocusPainted(false);
+    btn.setContentAreaFilled(true);
+    //btn.setBackground(new Color(222, 250, 202));
+    btn.setContentAreaFilled(false);
+    btn.setOpaque(false);
+    btn.setFocusPainted(false);
+    btn.setBorder(BorderFactory.createCompoundBorder(
+        BorderFactory.createLineBorder(new Color(200, 200, 200), 2), // Viền xám nhạt
+        BorderFactory.createEmptyBorder(8, 20, 8, 20)
+    ));
+    btn.getMargin().set(0,0,5,0);
+    btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+}
+
+private JPanel makeStatBox(ImageIcon icon, String text, Color bgColor, Color textColor) {
+    JPanel box = new RoundedPanel(15, bgColor);
+    box.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 8));
+    box.setAlignmentX(Component.CENTER_ALIGNMENT);
+    box.setMaximumSize(new Dimension(260, 55));
+
+    JLabel iconLabel = new JLabel(icon);
+    JLabel textLabel = new JLabel(text);
+    textLabel.setFont(new Font("Comic Sans MS", Font.BOLD, 18));
+    textLabel.setForeground(textColor);
+
+    box.add(iconLabel);
+    box.add(textLabel);
+    return box;
+}
+
+private ImageIcon loadDialogIcon(String path, int width, int height) {
+    try {
+        URL url = GameController.class.getResource(path);
+        if (url == null) {
+            System.err.println("❌ Không tìm thấy icon: " + path);
+            return null;
+        }
+        Image img = new ImageIcon(url).getImage()
+            .getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        return new ImageIcon(img);
+    } catch (Exception e) {
+        System.err.println("❌ Lỗi load icon: " + e.getMessage());
+        return null;
+    }
+}
+
+private void resetGame() {
+    model.reset();           
+    infoPanel.reset();       
+    view.renderAll(model);   
+    infoPanel.startTimer();  
+}
+}
+
+

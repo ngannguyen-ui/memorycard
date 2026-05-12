@@ -1,3 +1,4 @@
+package Logic;
 public enum GameStatus{
     WAITING,
     PLAYING, 

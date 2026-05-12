@@ -1,3 +1,5 @@
+package Logic;
+
 public class ScoreManager {
     private int earnedPoints;
     private int BASE_SCORE;

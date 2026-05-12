@@ -1,8 +1,5 @@
-interface DifficultyLevel{
-    int getPreviewTime();
-    int getMaxMoves();
-    String getRankName();
-}
+package Logic;
+
 public enum GameLevel implements DifficultyLevel {
     EASY(3000,30,"Beginner"),
     MEDIUM(2000,20,"Intermediate"),
