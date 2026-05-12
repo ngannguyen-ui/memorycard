@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import Logic.GameManager;
 import Logic.GameObserver;
+import Logic.GameStatus;
 
 public class MainFrame extends JFrame implements GameObserver{
     private static final int FRAME_WIDTH  = 900;
@@ -43,6 +44,10 @@ public class MainFrame extends JFrame implements GameObserver{
         // BẮT BUỘC PHẢI CÓ DÒNG NÀY ĐỂ BẢNG GAME VẼ LẠI:
         if (gamePanel != null && gameManager != null) {
             gamePanel.updateBoard(gameManager.getBoard());
+        }
+
+        if (gameManager.gameStatus() == GameStatus.PLAYING && !infoPanel.isTimerRunning()){
+            infoPanel.startTimer();
         }
         throw new UnsupportedOperationException("Unimplemented method 'onGameUpdate'");
     }

@@ -69,18 +69,20 @@ public class GameController {
             return null;
         }
     }
-
     // Khi người chơi bấm vào 1 lá bài
     public void onCellClicked(int row, int col) {
         //  GameManager sẽ tự lật, tự so sánh, tự úp bài nếu sai (bằng Timer của nó)
+        int moveBefore = gameManager.getMoveCount();
         gameManager.SelectedCard(row, col);
 
         // 2. Cập nhật điểm và số lượt đi lên InfoPanel
-       
+       // Chỉ cộng move khi đã lật hai thẻ 
+       if (gameManager.getMoveCount() > moveBefore){
         infoPanel.addMove();
-        infoPanel.addScore(10); // Ví dụ lấy điểm
+       }
 
-        
+       // Lấy điểm thực tế từ Player
+       infoPanel.setScore(gameManager.getPlayer().getScore());
     }
 
     // Bỏ 2 method checkMatch & flipBackWithDelay vì trong GameManager đã là full HD rồi
@@ -299,9 +301,8 @@ private ImageIcon loadDialogIcon(String path, int width, int height) {
 private void resetGame() {
     gameManager.resetGame();           
     infoPanel.reset();       
-    //view.renderAll(gameManager);   
-    infoPanel.startTimer();  
-}
+    //view.renderAll(gameManager);
+    }
 }
 
 

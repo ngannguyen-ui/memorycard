@@ -93,8 +93,17 @@ public class InfoPanel extends JPanel{
         if (countdownTimer != null) countdownTimer.stop(); 
     }
 
+    public boolean isTimerRunning() { // ✅ method nằm ở đây mới đúng
+        return countdownTimer != null && countdownTimer.isRunning();
+    }
+
     public void addScore(int points) { 
         score += points; 
+    }
+
+    public void setScore(int points){
+        score = points;
+        lblScore.setText(String.valueOf(score));
     }
 
     public void addMove() {

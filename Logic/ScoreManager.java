@@ -1,12 +1,15 @@
 package Logic;
+
 import java.util.*;
 
 public class ScoreManager {
+    private Player player;
     private int earnedPoints;
     private int BASE_SCORE;
     private int comboStack;
     private List<Player> leaderboard = new ArrayList<>();
-    public ScoreManager(){
+    public ScoreManager(Player player){
+        this.player = player;
         this.earnedPoints=0;
         this.comboStack=0;
         this.BASE_SCORE=10;
@@ -47,7 +50,7 @@ public class ScoreManager {
         leaderboard.sort(Comparator.comparingInt(Player::getScore).reversed());
     }
 
-    public void printLearderboard(){
+    public void printLeaderboard(){
         System.out.print("===  LEARDERBOARD ===\n");
         List<Player> top = getTopPlayers(5);
         for (int i =0; i < top.size(); i++){
