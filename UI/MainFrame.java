@@ -2,18 +2,24 @@ package UI;
 
 import javax.swing.*;
 import java.awt.*;
+import Logic.GameManager;
+import Logic.GameObserver;
 
-public class MainFrame extends JFrame{
+public class MainFrame extends JFrame implements GameObserver{
     private static final int FRAME_WIDTH  = 900;
     private static final int FRAME_HEIGHT = 750;
 
-    public MainFrame(GameModel model) {
-        Panel gamePanel = new Panel();
-        InfoPanel infoPanel = new InfoPanel();
-        GameController controller = new GameController(model, gamePanel, infoPanel);
+    private Panel gamePanel;
+    private InfoPanel infoPanel;
+    private GameManager gameManager;
+    public MainFrame(GameManager gameManager) {
+        this.gamePanel = new Panel();
+        this.infoPanel = new InfoPanel();
+        this.gameManager = gameManager;
+        GameController controller = new GameController(this.gameManager, this.gamePanel, this.infoPanel);
 
-        setLayout(new BorderLayout(5, 5));  // gap giữa các panel
         getContentPane().setBackground(new Color(250, 202, 222));
+        setLayout(new BorderLayout(5, 5));  // gap giữa các panel
 
         setLayout(new BorderLayout());
         add(infoPanel,  BorderLayout.NORTH);
@@ -28,5 +34,16 @@ public class MainFrame extends JFrame{
         setLocationRelativeTo(null);
 
         infoPanel.startTimer();
+    }
+
+    @Override
+    public void onGameUpdate() {
+        System.out.println("MainFrame nhận được lệnh cập nhật từ GameManager!"); // Thêm dòng này để test
+        
+        // BẮT BUỘC PHẢI CÓ DÒNG NÀY ĐỂ BẢNG GAME VẼ LẠI:
+        if (gamePanel != null && gameManager != null) {
+            gamePanel.updateBoard(gameManager.getBoard());
+        }
+        throw new UnsupportedOperationException("Unimplemented method 'onGameUpdate'");
     }
 }

@@ -64,11 +64,11 @@ public class GameManager {
         return this.scoreManager.getBaseScore();
     }
     public void setGameLevel(GameLevel level){
-        this.currentLevel=level;
+        this.currentLevel = level;
     }
 
     public void startGame(){
-        int previewTime=currentLevel.getPreviewTime();
+        int previewTime = currentLevel.getPreviewTime();
         MAX_Moves=currentLevel.getMaxMoves();
         startPreview(previewTime);
     }
@@ -134,20 +134,20 @@ public class GameManager {
         }
         else{
             SecondSelectedCard=currentCard;
-            SecondSelectedCard.flip();
             moveCount++;
         if (SecondSelectedCard.checkMatch(firstSelectedCard)){
             processMatch();
             
         } else{
-            MisMatch();
-        }
-        if (moveCount>=MAX_Moves&&!board.allMatched()&&status!=GameStatus.WAITING) {
+            if (moveCount>=MAX_Moves&&!board.allMatched()&&status!=GameStatus.WAITING) {
             status=GameStatus.LOOSE;
             if (stateObserver!=null){
                 stateObserver.onGameOver("GAME OVER");
             }
         }
+            MisMatch();
+        }
+        
     
     }
 }

@@ -1,5 +1,7 @@
 package UI;
 import Logic.Card;
+import Logic.GameManager;
+import Logic.GameStatus;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -11,20 +13,33 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
+import javax.swing.*;
 import java.awt.*;
 import java.net.URL;
 
 public class GameController {
-    private GameModel model = new GameModel();
-    private Panel view = new Panel();
+    private GameManager gameManager;
+    private Panel view;
     private GameController controller;
     private InfoPanel infoPanel;
 
-    public GameController(GameModel model, Panel view, InfoPanel infoPanel) {
-        this.model = model;
+    public GameController(GameManager gameManager, Panel view, InfoPanel infoPanel) {
+        this.gameManager = gameManager;
         this.view = view;
         this.infoPanel = infoPanel;
         view.setController(this);  
+
+        gameManager.setObserver(() -> view.updateBoard(gameManager.getBoard()));
+
+        gameManager.setStateObserver(result -> {
+        infoPanel.stopTimer();
+        if ("WINNING".equals(result)) {
+            showWinDialog(); 
+        } else if ("GAME OVER".equals(result)) {
+            showLoseDialog();
+            resetGame();
+        } 
+    });
     }
 
     public GameController getController(){
@@ -55,69 +70,72 @@ public class GameController {
         }
     }
 
+    // Khi người chơi bấm vào 1 lá bài
     public void onCellClicked(int row, int col) {
-        if (!model.canFlip(row, col)) return;
+        //  GameManager sẽ tự lật, tự so sánh, tự úp bài nếu sai (bằng Timer của nó)
+        gameManager.SelectedCard(row, col);
 
-        model.flipCard(row, col);
-        view.renderCell(row, col, model.getCard(row, col));
-
-        if (model.hasPendingPair()) {
-            checkMatch();
-        }
+        // 2. Cập nhật điểm và số lượt đi lên InfoPanel
+       
         infoPanel.addMove();
+        infoPanel.addScore(10); // Ví dụ lấy điểm
+
+        
     }
 
-    private void checkMatch() {
-        if (model.isMatch()) {
-            model.confirmMatch();
-            flashMatch();
-            infoPanel.addScore(10);
-            checkWin(); 
-        } else {
-            flipBackWithDelay();
-        }
-    }
+    // Bỏ 2 method checkMatch & flipBackWithDelay vì trong GameManager đã là full HD rồi
+    // private void checkMatch() {
+    //     if (model.isMatch()) {
+    //         model.confirmMatch();
+    //         flashMatch();
+    //         infoPanel.addScore(10);
+    //         checkWin(); 
+    //     } else {
+    //         flipBackWithDelay();
+    //     }
+    // }
 
-    private void flipBackWithDelay() {
-        view.setEnabled(false);
+    // private void flipBackWithDelay() {
+    //     view.setEnabled(false);
 
-        Timer timer = new Timer(800, e -> {
-            // Lật ngược lại
-            for (int[] pos : model.getPendingPair()) {
-                model.getCard(pos[0], pos[1]).hide();
-                view.renderCell(pos[0], pos[1], model.getCard(pos[0], pos[1]));
-            }
-            model.clearPending();
-            view.setEnabled(true);
-    });
+    //     Timer timer = new Timer(800, e -> {
+    //         // Lật ngược lại
+    //         for (int[] pos : model.getPendingPair()) {
+    //             model.getCard(pos[0], pos[1]).hide();
+    //             view.renderCell(pos[0], pos[1], model.getCard(pos[0], pos[1]));
+    //         }
+    //         model.clearPending();
+    //         view.setEnabled(true);
+    // });
 
-    timer.setRepeats(false);
-    timer.start();
-}
+//     timer.setRepeats(false);
+//     timer.start();
+// }
 
 // Nhấp nháy khi match
-public void flashMatch() {
-    int[] a = model.getLastMatch()[0];
-    int[] b = model.getLastMatch()[1];
+// tạm thời bỏ vì Manager cũng làm rồi
+// public void flashMatch() {
+//     int[] a = model.getLastMatch()[0];
+//     int[] b = model.getLastMatch()[1];
 
-    Timer flash = new Timer(150, null);
-    int[] count = {0};
+//     Timer flash = new Timer(150, null);
+//     int[] count = {0};
 
-    flash.addActionListener(e -> {
-        Color color = (count[0] % 2 == 0) ? Color.YELLOW : new Color(76, 175, 80);
-        view.setCellColor(a[0], a[1], color);
-        view.setCellColor(b[0], b[1], color);
-        if (++count[0] >= 6) flash.stop();
-    });
-    flash.start();
-}
+//     flash.addActionListener(e -> {
+//         Color color = (count[0] % 2 == 0) ? Color.YELLOW : new Color(76, 175, 80);
+//         view.setCellColor(a[0], a[1], color);
+//         view.setCellColor(b[0], b[1], color);
+//         if (++count[0] >= 6) flash.stop();
+//     });
+//     flash.start();
+// }
 
-private void checkWin() {
-    if (model.isWin()) {
-        infoPanel.stopTimer();
-        showWinDialog();
-    }
-}
+// private void checkWin() {
+//     if (gameManager.isWin()) {
+//         infoPanel.stopTimer();
+//         showWinDialog();
+//     }
+// }
 
 private void showWinDialog() {
     
@@ -132,44 +150,25 @@ private void showWinDialog() {
     lblTitle.setFont(new Font("Comic Sans MS", Font.BOLD, 24));
     lblTitle.setForeground(new Color(251, 84, 152));
 
-    JLabel fireworkImage = new JLabel(loadDialogIcon("/images/firework-icon.png", 50, 50));
+    JLabel fireworkImage = new JLabel(loadDialogIcon("UI/images/firework-icon.png", 50, 50));
 
     titlePanel.add(fireworkImage);
     titlePanel.add(lblTitle);
 
     JPanel scoreBox = makeStatBox(
-        loadDialogIcon("/images/star-icon.png", 32, 32),
+        loadDialogIcon("UI/images/star-icon.png", 32, 32),
         "Score: " + infoPanel.getScore(),
         new Color(244,159,70),    
         Color.WHITE      
     );
 
     JPanel timeBox = makeStatBox(
-        loadDialogIcon("/images/clock-icon.png", 32, 32),
+        loadDialogIcon("UI/images/clock-icon.png", 32, 32),
         "Time: " + infoPanel.getSeconds(),
         new Color(244,159,70),  
         Color.WHITE     
     );
 
-    // JPanel statsPanel = new JPanel(new GridLayout(2, 1, 0, 5));
-    // statsPanel.setBackground(new Color(244, 162, 89));
-    // statsPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
-
-    // JPanel scoreRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
-    // JLabel lblScore = new JLabel("Score: " + infoPanel.getScore(), SwingConstants.CENTER);
-    // lblScore.setFont(new Font("Comic Sans MS", Font.PLAIN, 16));
-    // lblScore.setForeground(Color.WHITE);
-    // JLabel starImage  = new JLabel(loadDialogIcon("/images/star-icon.png", 28, 28));
-    // scoreRow.add(starImage);
-    // scoreRow.add(lblScore);
-
-    // JPanel timeRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
-    // JLabel lblTime  = new JLabel("Time: " + infoPanel.getSeconds() + "s", SwingConstants.CENTER);
-    // JLabel clockImage = new JLabel(loadDialogIcon("/images/clock-icon.png", 28, 28));
-    // lblTime.setFont(new Font("Comic Sans MS", Font.PLAIN, 16));
-    // lblTime.setForeground(Color.WHITE);
-    // timeRow.add(clockImage);
-    // timeRow.add(lblTime);
 
     JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
     //btnPanel.setBackground(Color.WHITE);
@@ -177,16 +176,16 @@ private void showWinDialog() {
     JButton btnReplay = new JButton();
     JButton btnExit = new JButton();
 
-    ImageIcon replayImage = loadAndScaleByWidth("/images/replay_button.png", 110);
-    ImageIcon exitImage = loadAndScaleByWidth("/images/quit_button.png", 110);
+    ImageIcon replayImage = loadAndScaleByWidth("UI/images/replay_button.png", 110);
+    ImageIcon exitImage = loadAndScaleByWidth("UI/images/quit_button.png", 110);
 
     if (exitImage != null || replayImage != null) {
         btnReplay.setIcon(replayImage);
         btnExit.setIcon(exitImage);
-} else {
+    } else {
     btnReplay.setText("New Game");
     btnExit.setText("Quit");
-}
+    }
 
     btnReplay.setBorderPainted(false);      
     btnReplay.setContentAreaFilled(false);   
@@ -241,6 +240,12 @@ private void showWinDialog() {
     dialog.setVisible(true);
 }
 
+private void showLoseDialog() {
+    
+    
+    
+}
+
 private void styleButton(JButton btn, Color color) {
     btn.setBackground(color);
     btn.setForeground(Color.DARK_GRAY);
@@ -292,9 +297,9 @@ private ImageIcon loadDialogIcon(String path, int width, int height) {
 }
 
 private void resetGame() {
-    model.reset();           
+    gameManager.resetGame();           
     infoPanel.reset();       
-    view.renderAll(model);   
+    //view.renderAll(gameManager);   
     infoPanel.startTimer();  
 }
 }
