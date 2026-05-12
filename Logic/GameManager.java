@@ -134,7 +134,6 @@ public class GameManager {
         }
         else{
             SecondSelectedCard=currentCard;
-            SecondSelectedCard.flip();
             moveCount++;
         if (SecondSelectedCard.checkMatch(firstSelectedCard)){
             processMatch();

@@ -1,5 +1,6 @@
 package UI;
 import Logic.Card;
+import Logic.Board;
 import javax.swing.*;
 import java.awt.*;
 
@@ -50,15 +51,28 @@ public void renderCell(int row, int col, Card card) {
     cells[row][col].render(card); 
 }
 
-// Render toàn bộ bảng (dùng khi init / reset)
-public void renderAll(GameModel model) {
-    for (int r = 0; r < ROWS; r++)
-        for (int c = 0; c < COLS; c++)
-            renderCell(r, c, model.getCard(r, c));
-}
+// // Render toàn bộ bảng (dùng khi init / reset)
+// bỏ vì dùng kh còn phụ thuộc vào gameModel nữa
+// public void renderAll(GameModel model) {
+//     for (int r = 0; r < ROWS; r++)
+//         for (int c = 0; c < COLS; c++)
+//             renderCell(r, c, model.getCard(r, c));
+// }
 
 public void setCellColor(int row, int col, Color color) {
     cells[row][col].setBackground(color);
 }
+
+//  gọi khi GameManager có sự thay đổi
+    public void updateBoard(Board board) {
+        for (int r = 0; r < ROWS; r++) {
+            for (int c = 0; c < COLS; c++) {
+                Card card = board.getCard(r, c);
+                // Gọi hàm render của CardButton để nó tự cập nhật ảnh lật/úp
+                cells[r][c].render(card); 
+            }
+        }
+    }
+
     
 }
