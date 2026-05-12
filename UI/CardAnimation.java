@@ -1,3 +1,5 @@
+package UI;
+
 public class CardAnimation {
     private String value;
     private String imagePath;

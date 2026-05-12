@@ -1,3 +1,5 @@
+package UI;
+import Logic.Card;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -6,12 +8,18 @@ import java.net.URL;
 
 public class CardButton extends JButton {
     private int row, col;
-    private static final ImageIcon CARD_BACK = loadIcon("/images/card-back.png");
+    private static final ImageIcon CARD_BACK = loadIcon("UI/images/card-back.png");
+    private Color currentBg = Color.WHITE; 
+    static {
+        System.out.println("CARD_BACK null? " + (CARD_BACK == null));  // kiểm tra
+    }
 
     public CardButton(int row, int col) {
         this.row = row;
         this.col = col;
         setPreferredSize(new Dimension(80, 80));
+        setContentAreaFilled(false);
+        setBorderPainted(false);
         setIcon(CARD_BACK); 
         setOpaque(false);
         setText("");
@@ -25,16 +33,16 @@ public class CardButton extends JButton {
                         RenderingHints.VALUE_ANTIALIAS_ON);
 
     // Nền trắng bo tròn
-    g2.setColor(Color.WHITE);
-    g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+    g2.setColor(currentBg);
+        g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
 
-    // Viền cyan
-    g2.setColor(new Color(100, 210, 220));
-    g2.setStroke(new BasicStroke(2));
-    g2.drawRoundRect(1, 1, getWidth()-2, getHeight()-2, 20, 20);
+        // Vẽ viền
+        g2.setColor(new Color(100, 210, 220));
+        g2.setStroke(new BasicStroke(2));
+        g2.drawRoundRect(1, 1, getWidth()-2, getHeight()-2, 20, 20);
 
-    g2.dispose();
-    super.paintComponent(g);
+        g2.dispose();
+        super.paintComponent(g);
 }
 
     public void render(Card card) {
@@ -67,7 +75,7 @@ public class CardButton extends JButton {
 
         if (imgURL != null) {
             ImageIcon icon = new ImageIcon(imgURL);
-            Image scaled = icon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
+            Image scaled = icon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH);
             return new ImageIcon(scaled);
         } else {
             System.err.println("❌ Lỗi: Không tìm thấy file ảnh tại thư mục src" + resourcePath);
@@ -81,4 +89,7 @@ public class CardButton extends JButton {
 
     public int getRow() { return row; }
     public int getCol() { return col; }
+    public ImageIcon getCARD_BACK(){
+        return CARD_BACK;
+    }
 }

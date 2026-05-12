@@ -1,3 +1,4 @@
+package Logic;
 public class Card {
     private int ID;
     private int pairID;

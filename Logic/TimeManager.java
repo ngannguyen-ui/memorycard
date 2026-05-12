@@ -1,3 +1,5 @@
+package Logic;
+
 public class TimeManager{
     private long startTime;
     private long endTime;

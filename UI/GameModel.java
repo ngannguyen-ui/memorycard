@@ -1,8 +1,15 @@
+package UI;
+import Logic.Board;
+import Logic.Card;
+import Logic.LocalImageProvider;
+import Logic.RandomShuffle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.awt.Image;
+import java.awt.image.ImageProducer;
+
 import javax.swing.ImageIcon;
 
 public class GameModel {
@@ -12,6 +19,7 @@ public class GameModel {
     private List<int[]> flipped = new ArrayList<>();
     private int[][] lastMatch;
     private Board board;
+
     public GameModel() {
         board = new Board(new LocalImageProvider(), new RandomShuffle());
         //initBoard();
@@ -30,6 +38,7 @@ public class GameModel {
     //         {"grapes",  "/images/grapes.png"},
     //     };
 
+
     //      List<CardAnimation> list = new ArrayList<>();
     //     for (String[] data : cardData) {
     //     list.add(new CardAnimation(data[0], data[1]));
@@ -37,29 +46,37 @@ public class GameModel {
     //     }
     //     Collections.shuffle(list);
 
+
     //     int idx = 0;
     //     for (int r = 0; r < ROWS; r++)
     //         for (int c = 0; c < COLS; c++)
-    //             gameBoard[r][c] = list.get(idx++);
+    //            gameBoard[r][c] = list.get(idx++);
     // }
 
+
     public boolean canFlip(int r, int c) {
-        return !board.getCard(r, c).isMatch()
-            && !board.getCard(r, c).isFlipped()
+        Card card = board.getCard(r, c);
+        return card != null
+            && !card.isMatch()
+            && !card.isFlipped()
             && flipped.size() < 2;
     }
 
     public void flipCard(int r, int c) {
-        board.getCard(r, c).flip();
+        board.getCard(r, c).flip();             
         flipped.add(new int[]{r, c});
     }
+    //public void flipCard(int r, int c) {
+        //gameBoard[r][c].setFaceUp(true);
+        //flipped.add(new int[]{r, c});
+    //}
 
     public boolean hasPendingPair() { return flipped.size() == 2; }
 
     public boolean isMatch() {
         int[] a = flipped.get(0), b = flipped.get(1);
-        return board.getCard(a[0],a[1]).getPairID()
-             == (board.getCard(b[0], b[1]).getPairID());
+        return board.getCard(a[0], a[1]).getPairID()
+             == board.getCard(b[0],b[1]).getPairID();
     }
 
     public void confirmMatch() {
@@ -74,24 +91,36 @@ public class GameModel {
         flipped.clear();
     }
 
-    public boolean isWin() {
-    for (int r = 0; r < ROWS; r++)
-        for (int c = 0; c < COLS; c++)
-            if (!board.getCard(r, c).isMatch()) return false;
-    return true;
+    public void flipBackPending() {
+        for (int[] pos : flipped)
+            board.getCard(pos[0], pos[1]).hide();  
+        flipped.clear();
     }
+
+    public boolean isWin(){ 
+        return board.allMatched(); }
+
+    //public boolean isWin() {
+    //for (int r = 0; r < ROWS; r++)
+        //for (int c = 0; c < COLS; c++)
+            //if (!gameBoard[r][c].isMatched()) return false;
+    //return true;
+    //}
 
     public void reset() {
     flipped.clear();
     lastMatch = null;
     board.resetBoard();
     //initBoard();  
-}
+    }
+
+    public int[][] getLastMatch() { return lastMatch; }
+    
     public Card getCard(int r, int c){
         return board.getCard(r,c);
     }
-    
-    public int[][] getLastMatch() { return lastMatch; }
+
+    //public CardAnimation getCardAnimation(int r, int c) { return gameBoard[r][c]; }
     
     public List<int[]> getPendingPair() { return flipped; }
     

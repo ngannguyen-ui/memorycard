@@ -1,5 +1,6 @@
-import java.util.Random;
+package Logic;
 
+import java.util.Random;
 import javax.swing.JOptionPane;;
 
 public class Player {
