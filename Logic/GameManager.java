@@ -1,9 +1,12 @@
 package Logic;
+
+import javax.swing.SwingUtilities;
+
 public class GameManager {
     private Board board;
     private Player player;
     private Card firstSelectedCard;
-    private Card SecondSelectedCard;
+    private Card secondSelectedCard;
     private GameStatus status;
     private GameObserver observer;
     private StateGameObserver stateObserver;
@@ -13,13 +16,13 @@ public class GameManager {
     private int moveCount=0;
     private int MAX_Moves=7;
     private final int BASE_SCORE=10;
-    private GameLevel currentLevel; 
+    private GameLevel currentLevel;
     public GameManager(Board board,Player player){
         this.board=board;
         this.player=player;
-        this.scoreManager=new ScoreManager();
+        this.scoreManager= new ScoreManager();
         this.firstSelectedCard=null;
-        this.SecondSelectedCard=null;
+        this.secondSelectedCard=null;
         this.moveCount=0;
         this.status=GameStatus.PLAYING;
         this.timeManager=new TimeManager();
@@ -49,7 +52,7 @@ public class GameManager {
         return this.firstSelectedCard;
     }
     public Card getsecondSelectedCard(){
-        return this.SecondSelectedCard;
+        return this.secondSelectedCard;
     }
     public GameStatus gameStatus(){
         return this.status;
@@ -63,20 +66,24 @@ public class GameManager {
     public int getBaseScore(){
         return this.scoreManager.getBaseScore();
     }
+    public TimeManager getTimeManager() {
+        return this.timeManager;
+    }
     public void setGameLevel(GameLevel level){
-        this.currentLevel = level;
+        this.currentLevel=level;
     }
 
     public void startGame(){
-        int previewTime = currentLevel.getPreviewTime();
+        int previewTime=currentLevel.getPreviewTime();
         MAX_Moves=currentLevel.getMaxMoves();
         startPreview(previewTime);
     }
-
     public void startPreview(int miliseconds){
         status=GameStatus.WAITING;
         board.showBoard();
-        notifyObserver();
+        SwingUtilities.invokeLater(() -> {
+            notifyObserver();
+        });
         javax.swing.Timer previewTimer=new javax.swing.Timer(miliseconds,e->{
             board.hideAllCard();
             this.status=GameStatus.PLAYING;
@@ -87,15 +94,16 @@ public class GameManager {
     }
     public void processMatch(){
         firstSelectedCard.setMatch(true);
-        SecondSelectedCard.setMatch(true);
+        secondSelectedCard.setMatch(true);
         scoreManager.addMatchPoints();
-        player.addMatchPair(SecondSelectedCard, firstSelectedCard);
+        player.addMatchPair(secondSelectedCard, firstSelectedCard);
         int Point=scoreManager.getEarnedPoints();
         player.addScore(Point);
-        firstSelectedCard=null;
-        SecondSelectedCard=null;
         if (board.allMatched()){
             status=GameStatus.FINISHED;
+            timeManager.stop();
+            scoreManager.saveToLeaderboard(player);
+            scoreManager.printLeaderboard();
             if (stateObserver!=null) {
                 stateObserver.onGameOver("WINNING");
             }
@@ -110,9 +118,8 @@ public class GameManager {
         status=GameStatus.WAITING;
         javax.swing.Timer timer=new javax.swing.Timer(1000, e->{
             firstSelectedCard.hide();
-            SecondSelectedCard.hide();
-            firstSelectedCard=null;
-            SecondSelectedCard=null;
+            secondSelectedCard.hide();
+            resetSelectedCards();
             status=GameStatus.PLAYING;
             notifyObserver();
         });
@@ -133,32 +140,39 @@ public class GameManager {
             firstSelectedCard=currentCard;
         }
         else{
-            SecondSelectedCard=currentCard;
+            secondSelectedCard=currentCard;
+            secondSelectedCard.flip();
             moveCount++;
-        if (SecondSelectedCard.checkMatch(firstSelectedCard)){
-            processMatch();
             
-        } else{
+            if (secondSelectedCard.checkMatch(firstSelectedCard)){
+                processMatch();
+            }
+            else{
+                MisMatch();
+            }
+            
             if (moveCount>=MAX_Moves&&!board.allMatched()&&status!=GameStatus.WAITING) {
-            status=GameStatus.LOOSE;
-            if (stateObserver!=null){
-                stateObserver.onGameOver("GAME OVER");
+                status=GameStatus.LOOSE;
+                timeManager.stop();
+                if (stateObserver!=null){
+                    stateObserver.onGameOver("GAME OVER");
+                }
             }
         }
-            MisMatch();
-        }
-        
-    
     }
-}
-public void resetGame(){
+
+    public void resetSelectedCards(){
+        this.firstSelectedCard=null;
+        this.secondSelectedCard=null;
+    }
+
+    public void resetGame(){
     moveCount=0;
-    this.firstSelectedCard=null;
-    this.SecondSelectedCard=null;
+    scoreManager.resetScore();
+    resetSelectedCards();
     this.status=GameStatus.WAITING;
     board.resetBoard();
     startPreview(1000);
-
 }
    
 }

@@ -1,9 +1,9 @@
 package Logic;
 
 public enum GameLevel implements DifficultyLevel {
-    EASY(3000,30,"Beginner"),
-    MEDIUM(2000,20,"Intermediate"),
-    HARD(1000,10,"Expert");
+    EASY(3000,36,"Beginner"),
+    MEDIUM(2000,26,"Intermediate"),
+    HARD(1000,16,"Expert");
     private int previewTime;
     private int maxMoves;
     private String rankName;
